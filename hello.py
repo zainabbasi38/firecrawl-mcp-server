@@ -3,14 +3,14 @@ import os
 from dotenv import load_dotenv, find_dotenv
 
 from openai import AsyncOpenAI
-from agents import Agent, OpenAIChatCompletionsModel, Runner, enable_verbose_stdout_logging, SQLiteSession
+from agents import Agent, OpenAIChatCompletionsModel, Runner, enable_verbose_stdout_logging, SQLiteSession, set_tracing_disabled
 from agents.mcp import MCPServerStdio, MCPServerStdioParams, MCPServerStreamableHttp, MCPServerStreamableHttpParams
 # enable_verbose_stdout_logging()
 
 _: bool = load_dotenv(find_dotenv())
 
 # URL of our standalone MCP server (from shared_mcp_server)
-
+set_tracing_disabled(True)
 gemini_api_key = os.getenv("GEMINI_API_KEY")
 session = SQLiteSession("13", "dbsession.db")
 
