@@ -3,12 +3,12 @@ import os
 from dotenv import load_dotenv, find_dotenv
 
 from openai import AsyncOpenAI
-from agents import Agent, OpenAIChatCompletionsModel, Runner, enable_verbose_stdout_logging, SQLiteSession, set_tracing_disabled
+from agents import Agent, OpenAIChatCompletionsModel, Runner, enable_verbose_stdout_logging, SQLiteSession, set_tracing_disabled, set_default_openai_api, set_default_openai_client
 from agents.mcp import MCPServerStdio, MCPServerStdioParams, MCPServerStreamableHttp, MCPServerStreamableHttpParams
 # enable_verbose_stdout_logging()
 
 _: bool = load_dotenv(find_dotenv())
-
+set_default_openai_api("chat_completions")
 # URL of our standalone MCP server (from shared_mcp_server)
 set_tracing_disabled(True)
 gemini_api_key = os.getenv("GEMINI_API_KEY")
@@ -19,6 +19,7 @@ client = AsyncOpenAI(
     api_key=gemini_api_key,
     base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
 )
+set_default_openai_client(client)
 
 # params = MCPServerStdioParams(
 #     command= "/path/to/github-mcp-server",
@@ -46,7 +47,8 @@ async def main(input:str):
                 name="MyMCPConnectedAssistant",
                 instructions="You are web scraper agent. You can use the tools to scrape the content from the web . You can use multiple tools until you get the right content. Always return the final content in markdown format.You can end the turn when you satisfied that the query of user is now fulfilled.",
                 mcp_servers=[github_server],
-                model=OpenAIChatCompletionsModel(model="gemini-2.0-flash-exp", openai_client=client),
+                # model=OpenAIChatCompletionsModel(model="gemini-2.0-flash-exp", openai_client=client),
+                model="gemini-2.0-flash-exp"
             )
 
             result = await Runner.run(assistant, input, session=session)
