@@ -7,7 +7,9 @@ from agents import Agent, OpenAIChatCompletionsModel, Runner, enable_verbose_std
 from agents.mcp import MCPServerStdio, MCPServerStdioParams, MCPServerStreamableHttp, MCPServerStreamableHttpParams
 # enable_verbose_stdout_logging()
 
-_: bool = load_dotenv(find_dotenv())
+load_dotenv()
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+
 set_default_openai_api("chat_completions")
 # URL of our standalone MCP server (from shared_mcp_server)
 set_tracing_disabled(True)
