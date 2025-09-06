@@ -16,7 +16,6 @@ from agents.mcp import MCPServerStdio, MCPServerStdioParams
 load_dotenv(find_dotenv())
 
 def safe_get_env(key: str) -> str | None:
-    """Get environment variable safely and warn if missing."""
     value = os.getenv(key)
     if not value:
         st.warning(f"⚠️ Environment variable `{key}` is missing in .env")
