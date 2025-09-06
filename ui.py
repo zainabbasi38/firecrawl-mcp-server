@@ -12,24 +12,38 @@ from agents import (
 )
 from agents.mcp import MCPServerStdio, MCPServerStdioParams
 
-# ------------------- Setup -------------------
+# ------------------- Load environment -------------------
 load_dotenv(find_dotenv())
 
-# API keys
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-gemini_api_key = os.getenv("GEMINI_API_KEY")
-firecrawl_api_key = os.getenv("FIRECRAWL_API_KEY")
+def safe_get_env(key: str) -> str | None:
+    """Get environment variable safely and warn if missing."""
+    value = os.getenv(key)
+    if not value:
+        st.warning(f"⚠️ Environment variable `{key}` is missing in .env")
+    return value
+
+# Keys
+openai_api_key = safe_get_env("OPENAI_API_KEY")
+gemini_api_key = safe_get_env("GEMINI_API_KEY")
+firecrawl_api_key = safe_get_env("FIRECRAWL_API_KEY")
+
+# Only set if not None
+if openai_api_key:
+    os.environ["OPENAI_API_KEY"] = openai_api_key
 
 # Disable tracing to reduce noise
 set_tracing_disabled(True)
 set_default_openai_api("chat_completions")
 
-# Gemini as OpenAI-compatible client
-client = AsyncOpenAI(
-    api_key=gemini_api_key,
-    base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-)
-set_default_openai_client(client)
+# Gemini client as OpenAI-compatible wrapper
+if gemini_api_key:
+    client = AsyncOpenAI(
+        api_key=gemini_api_key,
+        base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+    )
+    set_default_openai_client(client)
+else:
+    client = None  # fallback if missing
 
 # SQLite session for persistence
 session = SQLiteSession("13", "dbsession.db")
@@ -38,7 +52,7 @@ session = SQLiteSession("13", "dbsession.db")
 params = MCPServerStdioParams(
     command="npx",
     args=["-y", "firecrawl-mcp"],
-    env={"FIRECRAWL_API_KEY": firecrawl_api_key}
+    env={"FIRECRAWL_API_KEY": firecrawl_api_key or ""}
 )
 
 # ------------------- Core Agent -------------------
@@ -57,7 +71,7 @@ async def run_agent(user_input: str):
                 model=OpenAIChatCompletionsModel(
                     model="gemini-2.0-flash-exp",
                     openai_client=client
-                ),
+                ) if client else "gpt-4o-mini"  # fallback if Gemini key missing
             )
             result = await Runner.run(assistant, user_input, session=session)
             return result.final_output
@@ -69,7 +83,7 @@ async def run_agent(user_input: str):
 
 # ------------------- Streamlit UI -------------------
 st.title("🌐 Web Scraping Agent")
-st.write("Scrape websites using Firecrawl MCP + Gemini AI.")
+st.write("Scrape websites using Firecrawl MCP + Gemini AI (fallback to GPT if missing).")
 
 if "messages" not in st.session_state:
     st.session_state["messages"] = []
