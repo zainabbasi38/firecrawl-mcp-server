@@ -45,7 +45,7 @@ else:
     client = None  # fallback if missing
 
 # SQLite session for persistence
-session = SQLiteSession("13", "dbsession.db")
+# session = SQLiteSession("13", "dbsession.db")
 
 # MCP Firecrawl params
 params = MCPServerStdioParams(
@@ -72,7 +72,7 @@ async def run_agent(user_input: str):
                     openai_client=client
                 ) if client else "gpt-4o-mini"  # fallback if Gemini key missing
             )
-            result = await Runner.run(assistant, user_input, session=session)
+            result = await Runner.run(assistant, user_input)
             return result.final_output
         except Exception as e:
             return f"❌ Error in agent: {e}"

@@ -14,7 +14,7 @@ set_default_openai_api("chat_completions")
 # URL of our standalone MCP server (from shared_mcp_server)
 set_tracing_disabled(True)
 gemini_api_key = os.getenv("GEMINI_API_KEY")
-session = SQLiteSession("13", "dbsession.db")
+
 
 #Reference: https://ai.google.dev/gemini-api/docs/openai
 client = AsyncOpenAI(
@@ -53,7 +53,7 @@ async def main(input:str):
                 model="gemini-2.0-flash-exp"
             )
 
-            result = await Runner.run(assistant, input, session=session)
+            result = await Runner.run(assistant, input)
             return result.final_output
             # print(f"Agent result: {result.final_output}")
             
